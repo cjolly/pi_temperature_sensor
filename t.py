@@ -10,6 +10,7 @@ os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
 
 connection = sqlite3.connect('temp_sensor.db')
+connection.row_factory = sqlite3.Row
 atexit.register(connection.close)
 cursor = connection.cursor()
 
@@ -37,15 +38,18 @@ def read_temp():
 		temp_f = temp_c * 9.0 / 5.0 + 32.0
 		return temp_c, temp_f
 
+def output():
+	cursor.execute("""SELECT round(temperature_f, 2) AS temperature_f FROM readings ORDER BY created_at DESC LIMIT 1""")
+	last_reading = cursor.fetchone()
+
+	os.system('clear')	
+	print('Last reading: ' + str(last_reading['temperature_f']))
+
 while True:
 	temp_c, temp_f = read_temp()
 	
 	cursor.execute("""INSERT INTO readings (temperature_c, temperature_f, created_at) values((?), (?), datetime('now'))""", (temp_c, temp_f))
-	
-	print('\r' * 7),
-	print(str(temp_f)),
-	sys.stdout.flush()
-
 	connection.commit()
+	output()
 	time.sleep(60)
 
