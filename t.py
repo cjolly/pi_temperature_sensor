@@ -39,11 +39,17 @@ def read_temp():
 		return temp_c, temp_f
 
 def output():
-	cursor.execute("""SELECT round(temperature_f, 2) AS temperature_f FROM readings ORDER BY created_at DESC LIMIT 1""")
+	cursor.execute("""SELECT round(temperature_f, 2) AS temperature_f, time(created_at, 'localtime') AS created_at FROM readings ORDER BY readings.created_at DESC LIMIT 1""")
 	last_reading = cursor.fetchone()
 
 	os.system('clear')	
-	print('Last reading: ' + str(last_reading['temperature_f']))
+	print('Last reading: ' + str(last_reading['temperature_f']) + ' at ' + last_reading['created_at'])
+	
+	cursor.execute("""SELECT round(max(temperature_f), 2) AS max_f, round(min(temperature_f), 2) AS min_f from readings where datetime(readings.created_at, 'localtime') > date('now', 'localtime')""")
+	max_min_today = cursor.fetchone()
+
+	print('High today: ' + str(max_min_today['max_f']))
+	print('Low today: ' + str(max_min_today['min_f']))
 
 while True:
 	temp_c, temp_f = read_temp()
