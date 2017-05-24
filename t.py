@@ -6,6 +6,8 @@ import datetime
 import sqlite3
 import atexit
 
+# Dependent on adding following uncommented line /boot/config.txt
+# dtoverlay=w1-gpio
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
 
